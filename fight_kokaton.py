@@ -163,12 +163,17 @@ class Score:
         screen.blit(self.img, [100, HEIGHT-50])
 
 class Explosion:
+    """
+    爆発エフェクトの追加
+    爆弾Surfaceの生成
+    その画像と反転したものをリストに格納
+    """
     img = pg.image.load(f"fig/explosion.gif")  # 爆弾Surface
     img_ = pg.transform.flip(img, True, True)
     lst = [img, img_]
     def __init__(self, bomb):
         """
-
+        表示時間lifeを設定
         """
         self.img = Explosion.lst[0]
         self.center = bomb.rct.center  # 中心座標
