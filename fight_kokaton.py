@@ -141,14 +141,50 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 class Score:
+    """
+    スコアに関するクラス
+    """
     def __init__(self):
+        """
+        フォントの設定をする
+        スコアの初期値を設定する
+        文字列Surfaceを生成する
+        """
         self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
         self.score = 0
         self.img = self.fonto.render(f"スコア：{self.score}", 0, (0, 0, 255))
 
     def update(self, screen):
+        """
+        現在のスコアに表示させる文字列Surfaceを生成する
+        スクリーンにblit
+        """
         self.img = self.fonto.render(f"スコア：{self.score}", 0, (0, 0, 255))    
         screen.blit(self.img, [100, HEIGHT-50])
+
+class Explosion:
+    img = pg.image.load(f"fig/explosion.gif")  # 爆弾Surface
+    img_ = pg.transform.flip(img, True, True)
+    lst = [img, img_]
+    def __init__(self, bomb):
+        """
+
+        """
+        self.img = Explosion.lst[0]
+        self.center = bomb.rct.center  # 中心座標
+        self.life = 100
+
+    def update(self, screen):
+        """
+        爆発経過時間lifeを1減算
+        爆発経過時間lifeが正なら、Surfaceリストを交互に切り替える
+        """
+        self.life -= 1
+        if self.life > 0:
+            self.img = Explosion.lst[self.life%2]
+            # self.rct.move_ip(self.vx, self.vy)
+            screen.blit(self.img, self.center)  
+
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -162,7 +198,7 @@ def main():
     clock = pg.time.Clock()
     tmr = 0
     score = Score()  # Scoreインスタンスの生成
-    
+    explosions = []
 
     while True:
         for event in pg.event.get():
@@ -192,9 +228,13 @@ def main():
                     bird.change_img(6, screen)
                     pg.display.update()
                     score.score += 1
+                    explosion = Explosion(bomb)
+                    explosions.append(explosion)
                     # time.sleep(1)
         bombs = [bomb for bomb in bombs if bomb is not None]  # 衝突(None)した爆弾は取り除く
-        lst = [beam for beam in lst if beam is not None]
+        lst = [beam for beam in lst if beam is not None]  # 衝突した(None)したビームは取り除く
+        if len(explosions) > 0:
+            explosions = [explosion for explosion in explosions if explosion.life > 0]
 
         for beam in lst:  # ビームが画面外に出たら
             if beam.vx >= HEIGHT:
@@ -208,6 +248,9 @@ def main():
             bomb.update(screen)
 
         score.update(screen)
+
+        for explosion in explosions:  
+            explosion.update(screen)
 
         pg.display.update()
         tmr += 1
